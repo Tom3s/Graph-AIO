@@ -6,15 +6,17 @@
 #include <fstream>
 #include <string>
 
+class EdgeIterator;
 class VertexIterator;
 class OutboundEdgeIterator;
 class InboundEdgeIterator;
 
-//const Vertex NULL_VERTEX = Vertex(NULL_ID);
-//const Edge NULL_EDGE = Edge(nullptr, nullptr, NULL_ID, NULL_ID);
+const Vertex NULL_VERTEX = Vertex(NULL_ID);
+const Edge NULL_EDGE = Edge(nullptr, nullptr, NULL_ID, NULL_ID);
 
 class Graph{
 
+    friend class EdgeIterator;
     friend class VertexIterator;
     friend class InboundEdgeIterator;
     friend class OutboundEdgeIterator;
@@ -65,6 +67,8 @@ class Graph{
     bool remove_vertex(VertexID vertex_id);
     //vertex iterator
     VertexIterator vertex_iterator();
+
+    EdgeIterator edge_iterator();
     //inbound iterator
     InboundEdgeIterator inbound_edge_iterator(VertexID vertex_id);
     //outbound iterator
@@ -74,10 +78,11 @@ class Graph{
     Graph copy();
 
 
-    ~Graph();
+    void clear();
 
 };
 
 Graph read_graph_from_file(std::string input_file);
 void write_graph_to_file(Graph graph, std::string output_file);
 Graph create_random_graph(int nr_vertices, int nr_edges);
+void print_everything(Graph graph);

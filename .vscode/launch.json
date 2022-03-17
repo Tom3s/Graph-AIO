@@ -8,7 +8,7 @@
             "name": "g++.exe - Build and debug active file",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+            "program": "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\main.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

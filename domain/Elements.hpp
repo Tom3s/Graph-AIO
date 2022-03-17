@@ -45,13 +45,17 @@ class Vertex{
     friend class InboundEdgeIterator;
     friend class OutboundEdgeIterator;
     friend class Graph;
+    friend class Edge;
 
     private:
         std::vector<Edge*> inbound_edges;
         std::vector<Edge*> outbound_edges;
         VertexID vertex_id;
+
         std::vector<Edge*> get_inbound_edges();
         std::vector<Edge*> get_outbound_edges();
+        bool remove_outbound_edge(Edge* edge);
+        bool remove_inbound_edge(Edge* edge);
 
     public:
 
@@ -60,6 +64,5 @@ class Vertex{
     bool add_edge(Edge* edge);
     bool add_outbound_edge(Edge* edge);
     bool add_inbound_edge(Edge* edge);
-
     ~Vertex();
 };

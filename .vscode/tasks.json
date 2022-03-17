@@ -7,12 +7,12 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${fileDirname}\\domain\\Elements.cpp",
-                "${fileDirname}\\domain\\Graph.cpp",
-                "${fileDirname}\\domain\\Iterators.cpp",
-                "${file}",
+                "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\domain\\Elements.cpp",
+                "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\domain\\Graph.cpp",
+                "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\domain\\Iterators.cpp",
+                "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\main.cpp",
                 "-o",
-                "${fileDirname}\\main.exe"
+                "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\main.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"

@@ -26,6 +26,30 @@ class VertexIterator{
     bool valid();
 };
 
+class EdgeIterator{
+
+    //friend class Vertex;
+    friend class Graph;
+
+    private:
+        std::vector<Edge*> list;
+        int current;
+
+    public:
+    
+    EdgeIterator();
+
+    EdgeIterator(Graph& graph);
+
+    void first();
+    void next();
+    EdgeID get_current_edge_id();
+    int get_current_edge_cost();
+    EdgeID get_base_vertex();
+    EdgeID get_target_vertex();
+    bool valid();
+};
+
 class InboundEdgeIterator{
 
     //friend class Vertex;

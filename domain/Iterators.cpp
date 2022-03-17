@@ -53,6 +53,72 @@ bool VertexIterator::valid(){
     return false;
 }
 
+EdgeIterator::EdgeIterator(Graph& graph){
+    this->list = graph.get_edges();
+    this->current = 0;
+}
+
+void EdgeIterator::first(){
+    this->current = 0;
+}
+
+void EdgeIterator::next(){
+    if (this->valid()){
+        this->current++;
+    } else {
+        //error
+    }
+}
+
+EdgeID EdgeIterator::get_current_edge_id(){
+    if (this->valid()){
+        return this->list[this->current]->get_id();
+    } else {
+        throw std::exception();
+        return NULL_ID;
+        //error
+    }
+}
+
+int EdgeIterator::get_current_edge_cost(){
+    if (this->valid()){
+        return this->list[this->current]->get_cost();
+    } else {
+        throw std::exception();
+        return NULL_ID;
+        //error
+    }
+}
+
+EdgeID EdgeIterator::get_base_vertex(){
+    if (this->valid()){
+        return this->list[this->current]->get_from();
+    } else {
+        throw std::exception();
+        return NULL_ID;
+        //error
+    }
+}
+
+EdgeID EdgeIterator::get_target_vertex(){
+    if (this->valid()){
+        return this->list[this->current]->get_to();
+    } else {
+        throw std::exception();
+        return NULL_ID;
+        //error
+    }
+}
+
+bool EdgeIterator::valid(){
+    if (this->current < this->list.size()){
+        return true;
+    }
+    return false;
+}
+
+
+
 
 InboundEdgeIterator::InboundEdgeIterator(Graph& graph, VertexID vertex_id){
     Vertex* vertex = graph.find_vertex_by_id(vertex_id);
@@ -78,7 +144,7 @@ EdgeID InboundEdgeIterator::get_current_edge_id(){
     }
 }
 
-EdgeID InboundEdgeIterator::get_current_edge_cost(){
+int InboundEdgeIterator::get_current_edge_cost(){
     if (this->valid()){
         return this->list[this->current]->get_cost();
     } else {
@@ -130,7 +196,7 @@ EdgeID OutboundEdgeIterator::get_current_edge_id(){
     }
 }
 
-EdgeID OutboundEdgeIterator::get_current_edge_cost(){
+int OutboundEdgeIterator::get_current_edge_cost(){
     if (this->valid()){
         return this->list[this->current]->get_cost();
     } else {

@@ -2,10 +2,12 @@
 #include "Iterators.hpp"
 #include <string>
 #include <fstream>
+#include <iostream>
 
 Graph::Graph(int nr_vertices, int nr_edges){
     //this->number_of_edges = nr_edges;
     //this->number_of_vertices = nr_vertices;
+    
     this->vertices = std::vector<Vertex*>(nr_vertices, 0);
     this->edges = std::vector<Edge*>(nr_edges, 0);
 
@@ -61,7 +63,9 @@ Endpoints Graph::get_endpoints(EdgeID edge_id){
 }
 
 Vertex* Graph::find_vertex_by_id(VertexID vertex_id){
-    if (vertex_id > this->vertices[this->get_number_of_vertices() - 1]->get_id()){
+    int nr = this->get_number_of_vertices();
+    int last_id = this->vertices[nr - 1]->get_id();
+    if (vertex_id > last_id){
         return nullptr;
     }
 
@@ -77,7 +81,7 @@ Vertex* Graph::find_vertex_by_id(VertexID vertex_id){
         if (current_id > vertex_id){
             middle /= 2;
         } else {
-            middle = middle + middle / 2;
+            middle = middle + middle / 2 + 1;
         }
         current_id = this->vertices[middle]->get_id();
     }
@@ -173,6 +177,9 @@ void Graph::initialize_edge(VertexID from, VertexID to, int cost, EdgeID edge_id
     v_to->add_inbound_edge(new_edge);
 
     this->edges[edge_id] = new_edge;
+
+    //std::cout << "Nr. edges: " << this->get_number_of_edges() << "\n";
+    //this->edges[edge_id] = new_edge;
 }
 
 bool Graph::add_edge(VertexID from, VertexID to, int cost){
@@ -234,22 +241,25 @@ bool Graph::remove_vertex(VertexID vertex_id){
 
     std::vector<Edge*> inbound = vertex->get_inbound_edges();
     for (int i = inbound.size() - 1; i >= 0; i--){
-        this->delete_edge_by_id(inbound[i]->get_id());
+        inbound[i]->from->remove_outbound_edge(inbound[i]);
+        delete this->delete_edge_by_id(inbound[i]->get_id());
     }
-    inbound.clear();
 
     std::vector<Edge*> outbound = vertex->get_outbound_edges();
     for (int i = outbound.size() - 1; i >= 0; i--){
-        this->delete_edge_by_id(outbound[i]->get_id());
+        outbound[i]->to->remove_inbound_edge(outbound[i]);
+        delete this->delete_edge_by_id(outbound[i]->get_id());
     }
-    outbound.clear();
-
     delete vertex;
     return true;
 }
 
 VertexIterator Graph::vertex_iterator(){
     return VertexIterator(*this);
+}
+
+EdgeIterator Graph::edge_iterator(){
+    return EdgeIterator(*this);
 }
 
 InboundEdgeIterator Graph::inbound_edge_iterator(VertexID vertex_id){
@@ -260,14 +270,19 @@ OutboundEdgeIterator Graph::outbound_edge_iterator(VertexID vertex_id){
     return OutboundEdgeIterator(*this, vertex_id);
 }
 
-Graph::~Graph(){
-    for (int i = 0; i < this->get_number_of_edges(); i++){
+void Graph::clear(){
+    
+    
+    for (int i = this->get_number_of_edges() - 1 ; i >= 0; i--){
         delete this->edges[i];
     }
-
-    for (int i = 0; i < this->get_number_of_vertices(); i++){
+    this->edges.clear();
+    
+    for (int i = this->get_number_of_vertices() - 1; i >= 0; i--){
         delete this->vertices[i];
     }
+    this->vertices.clear();
+    
 }
 
 Graph read_graph_from_file(std::string input_file){
@@ -304,4 +319,39 @@ void write_graph_to_file(Graph graph, std::string output_file){
         iter.next();
     }
     ouput.close();
+}
+
+void print_everything(Graph graph){
+    EdgeIterator edge_iter = graph.edge_iterator();
+    while (edge_iter.valid()){
+        std::cout << edge_iter.get_base_vertex() << " " << edge_iter.get_target_vertex() << " " << edge_iter.get_current_edge_cost() << "\n";
+        edge_iter.next();
+    }
+    std::cout << "\n";
+
+    VertexIterator vert_iter = graph.vertex_iterator();
+    vert_iter.first();
+
+    while (vert_iter.valid()){
+        VertexID this_vert = vert_iter.get_current_vertex_id();
+        std::cout << this_vert << ": \n";
+        InboundEdgeIterator in_iter = graph.inbound_edge_iterator(this_vert);
+        in_iter.first();
+        std::cout << " in: ";
+        while (in_iter.valid()){
+            std::cout << in_iter.get_current_base_vertex_id() << " ";
+            in_iter.next();
+        }
+        std::cout << "\n";
+        
+        OutboundEdgeIterator out_iter = graph.outbound_edge_iterator(this_vert);
+        out_iter.first();
+        std::cout << " out: ";
+        while (out_iter.valid()){
+            std::cout << out_iter.get_current_target_vertex_id() << " ";
+            out_iter.next();
+        }
+        std::cout << "\n";
+        vert_iter.next();
+    }
 }
