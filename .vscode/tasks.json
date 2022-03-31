@@ -3,16 +3,18 @@
         {
             "type": "cppbuild",
             "label": "C/C++: g++.exe build active file",
-            "command": "C:\\MinGW\\bin\\g++.exe",
+            "command": "C:\\msys64\\mingw64\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\domain\\Elements.cpp",
-                "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\domain\\Graph.cpp",
-                "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\domain\\Iterators.cpp",
-                "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\main.cpp",
+                "${fileDirname}\\domain\\Elements.cpp",
+                "${fileDirname}\\domain\\Graph.cpp",
+                "${fileDirname}\\domain\\Iterators.cpp",
+                "${fileDirname}\\domain\\TrueBool.cpp",
+                "${fileDirname}\\ui\\UI.cpp",
+                "${file}",
                 "-o",
-                "C:\\stuff\\Uni\\Graph Theory\\Graph-AIO\\main.exe"
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"

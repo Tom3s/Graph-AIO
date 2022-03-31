@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Elements.hpp"
+#include "TrueBool.hpp"
 
 #include <vector>
 #include <fstream>
@@ -16,17 +17,20 @@ const Edge NULL_EDGE = Edge(nullptr, nullptr, NULL_ID, NULL_ID);
 
 class Graph{
 
+    friend Graph read_graph_from_file_inconsistent(std::string input_file);
     friend class EdgeIterator;
     friend class VertexIterator;
     friend class InboundEdgeIterator;
     friend class OutboundEdgeIterator;
 
     private:
-        //int number_of_vertices;
+        //int highest_vertex_id;
         //int number_of_edges;
+        //int number_of_vertices;
         std::vector<Vertex*> vertices;
         std::vector<Edge*> edges;
 
+        //int get_highest_vertex_id();
         std::vector<Vertex*> get_vertices(); //delete later
         std::vector<Edge*> get_edges(); //delete later
         Vertex* find_vertex_by_id(VertexID vertex_id);
@@ -36,9 +40,14 @@ class Graph{
     
     public:
     
+    Graph();
     Graph(int nr_vertices, int nr_edges);
-    //iterator
+    Graph(int nr_vertices, int nr_edges, TrueBoolArray& vertex_ids);
+    Graph(int nr_vertices);
+    Graph(const Graph& old_graph);
+    Graph& operator=(const Graph& old_graph);
 
+    //iterator
     int get_number_of_vertices();
     int get_number_of_edges();
 
@@ -53,7 +62,8 @@ class Graph{
 
     //add edge
     void initialize_edge(VertexID from, VertexID to, int cost, EdgeID edge_id);
-    bool add_edge(VertexID from, VertexID to, int cost);
+    void initialize_vertex(VertexID vertex_id);
+    EdgeID add_edge(VertexID from, VertexID to, int cost);
     //get edge cost
     int get_edge_cost(EdgeID edge_id);
     //edit edge cost
@@ -80,9 +90,13 @@ class Graph{
 
     void clear();
 
+    ~Graph();
+
 };
 
 Graph read_graph_from_file(std::string input_file);
-void write_graph_to_file(Graph graph, std::string output_file);
+Graph read_graph_from_file_inconsistent(std::string input_file);
+void write_graph_to_file(Graph& graph, std::string output_file);
+void write_graph_to_file_inconsistent(Graph& graph, std::string output_file);
 Graph create_random_graph(int nr_vertices, int nr_edges);
-void print_everything(Graph graph);
+void print_everything(Graph& graph);
