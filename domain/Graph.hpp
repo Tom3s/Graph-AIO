@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Elements.hpp"
-#include "TrueBool.hpp"
 
 #include <vector>
 #include <fstream>
@@ -40,9 +39,9 @@ class Graph{
     
     public:
     
+    //Graph(int nr_vertices, int nr_edges, TrueBoolArray& vertex_ids);
     Graph();
     Graph(int nr_vertices, int nr_edges);
-    Graph(int nr_vertices, int nr_edges, TrueBoolArray& vertex_ids);
     Graph(int nr_vertices);
     Graph(const Graph& old_graph);
     Graph& operator=(const Graph& old_graph);
@@ -62,7 +61,7 @@ class Graph{
 
     //add edge
     void initialize_edge(VertexID from, VertexID to, int cost, EdgeID edge_id);
-    void initialize_vertex(VertexID vertex_id);
+    //void initialize_vertex(VertexID vertex_id);
     EdgeID add_edge(VertexID from, VertexID to, int cost);
     //get edge cost
     int get_edge_cost(EdgeID edge_id);
@@ -95,8 +94,9 @@ class Graph{
 };
 
 Graph read_graph_from_file(std::string input_file);
-Graph read_graph_from_file_inconsistent(std::string input_file);
 void write_graph_to_file(Graph& graph, std::string output_file);
+Graph read_graph_from_file_inconsistent(std::string input_file);
 void write_graph_to_file_inconsistent(Graph& graph, std::string output_file);
 Graph create_random_graph(int nr_vertices, int nr_edges);
+Graph create_random_graph_old(int nr_vertices, int nr_edges);
 void print_everything(Graph& graph);

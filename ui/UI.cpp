@@ -106,6 +106,12 @@ void UI::get_in_degree(){
     std::cout << ">>> " << std::flush;
     std::cin >> input;
 
+    int indegree = this->graph.inbound_degree(input);
+    if (indegree == -1) {
+        std::cout << "Vertex " << input << " is not part of the graph!" << std::endl;
+        return;
+    }
+
     std::cout << "Inbound degree of vertex " << input << " " << this->graph.inbound_degree(input) << std::endl;
 }
 
@@ -114,6 +120,12 @@ void UI::get_out_degree(){
     std::cout << "ID of vertex:" << std::endl;
     std::cout << ">>> " << std::flush;
     std::cin >> input;
+
+    int outdegree = this->graph.inbound_degree(input);
+    if (outdegree == -1) {
+        std::cout << "Vertex " << input << " is not part of the graph!" << std::endl;
+        return;
+    }
 
     std::cout << "Outbound degree of vertex " << input << " " << this->graph.outbound_degree(input) << std::endl;
 }
@@ -270,7 +282,7 @@ void UI::get_edge_properties(){
 
     int cost = this->graph.get_edge_cost(index);
 
-    if (cost == NULL_ID){
+    if (cost == -1){
         std::cout << "Edge is not part of the graph!" << std::endl;
         return;
     }
@@ -400,8 +412,8 @@ void UI::random_graph(){
         return;
     }
 
-    this->graph.~Graph();
-    this->graph = create_random_graph(nr_vertices, nr_edges);
+    this->graph.clear();
+    this->graph = create_random_graph_old(nr_vertices, nr_edges);
 }
 
 bool UI::main_menu(){

@@ -1,6 +1,5 @@
 #include "Graph.hpp"
 #include "Iterators.hpp"
-#include "TrueBool.hpp"
 
 #include <string>
 #include <fstream>
@@ -28,31 +27,31 @@ Graph::Graph(int nr_vertices, int nr_edges){
     }
 }
 
-Graph::Graph(int nr_vertices, int nr_edges, TrueBoolArray& vertex_ids){
-    //this->number_of_edges = nr_edges;
-    //this->number_of_vertices = nr_vertices;
+// Graph::Graph(int nr_vertices, int nr_edges, TrueBoolArray& vertex_ids){
+//     //this->number_of_edges = nr_edges;
+//     //this->number_of_vertices = nr_vertices;
 
-    //this->highest_vertex_id = -1;
+//     //this->highest_vertex_id = -1;
     
-    this->vertices = std::vector<Vertex*>();
-    this->edges = std::vector<Edge*>();
+//     this->vertices = std::vector<Vertex*>();
+//     this->edges = std::vector<Edge*>();
 
-    for (int i = 0; i < vertex_ids.get_size(); i++){
-        if (vertex_ids.get(i)){
-            Vertex* new_vertex = new Vertex(i);
-            this->vertices.push_back(new_vertex);
-        }
-    }
-    if (this->vertices.size() == nr_vertices) return;
-    //std::cout << this->vertices.size() << " " <<  nr_vertices << std::endl;
+//     for (int i = 0; i < vertex_ids.get_size(); i++){
+//         if (vertex_ids.get(i)){
+//             Vertex* new_vertex = new Vertex(i);
+//             this->vertices.push_back(new_vertex);
+//         }
+//     }
+//     if (this->vertices.size() == nr_vertices) return;
+//     //std::cout << this->vertices.size() << " " <<  nr_vertices << std::endl;
 
-    //Create vertecis
-    int index = 0;
-    while (this->vertices.size() < nr_vertices){
-        Vertex* new_vertex = new Vertex(this->vertices[this->vertices.size() - 1]->get_id() + 1);
-        this->vertices.push_back(new_vertex);
-    }
-}
+//     //Create vertecis
+//     int index = 0;
+//     while (this->vertices.size() < nr_vertices){
+//         Vertex* new_vertex = new Vertex(this->vertices[this->vertices.size() - 1]->get_id() + 1);
+//         this->vertices.push_back(new_vertex);
+//     }
+// }
 
 Graph::Graph(int nr_vertices){
     //this->number_of_edges = nr_edges;
@@ -124,6 +123,7 @@ int Graph::get_number_of_edges(){
 
 EdgeID Graph::is_edge(VertexID from, VertexID to){
     Vertex* vertex = this->find_vertex_by_id(from);
+    if (vertex == nullptr) return NULL_ID;
     std::vector<Edge*> outbound_edges = vertex->get_outbound_edges();
 
     for (int i = 0; i < outbound_edges.size(); i++){
@@ -136,11 +136,13 @@ EdgeID Graph::is_edge(VertexID from, VertexID to){
 
 int Graph::inbound_degree(VertexID vertex_id){
     Vertex* vertex = this->find_vertex_by_id(vertex_id);
+    if (vertex == nullptr) return -1;
     int degree = vertex->get_inbound_edges().size();
     return degree;
 }
 int Graph::outbound_degree(VertexID vertex_id){
     Vertex* vertex = this->find_vertex_by_id(vertex_id);
+    if (vertex == nullptr) return -1;
     int degree = vertex->get_outbound_edges().size();
     return degree;
 }
@@ -148,6 +150,10 @@ int Graph::outbound_degree(VertexID vertex_id){
 Endpoints Graph::get_endpoints(EdgeID edge_id){
     Endpoints endpoints;
     Edge* edge = this->find_edge_by_id(edge_id);
+    if (edge == nullptr){
+        endpoints.first = NULL_ID;
+        endpoints.second = NULL_ID;
+    }
     endpoints.first = edge->get_from();
     endpoints.second = edge->get_to();
     return endpoints;
@@ -334,7 +340,7 @@ EdgeID Graph::add_edge(VertexID from, VertexID to, int cost){
 int Graph::get_edge_cost(EdgeID edge_id){
     Edge* edge = this->find_edge_by_id(edge_id);
     if (edge == nullptr){
-        return NULL_ID;
+        return -1;
     }
     return edge->get_cost();
 }
@@ -416,22 +422,18 @@ InboundEdgeIterator Graph::inbound_edge_iterator(VertexID vertex_id){
 OutboundEdgeIterator Graph::outbound_edge_iterator(VertexID vertex_id){
     return OutboundEdgeIterator(*this, vertex_id);
 }
-/*
-Graph::~Graph(){
+
+void Graph::clear(){
     
     for (int i = this->get_number_of_edges() - 1 ; i >= 0; i--){
         delete this->edges[i];
     }
-    this->edges.clear();
     
     for (int i = this->get_number_of_vertices() - 1; i >= 0; i--){
         delete this->vertices[i];
     }
-    this->vertices.clear();
-    
-    
 }
-*/
+
 Graph Graph::copy(){
     //int highest_vertex_id = this->get_highest_vertex_id();
     int nr_vertices = this->get_number_of_vertices();
@@ -446,7 +448,8 @@ Graph Graph::copy(){
         VertexID from = this->edges[i]->get_from();
         VertexID to = this->edges[i]->get_to();
         int cost = this->edges[i]->get_cost();
-        new_graph.add_edge(from, to, cost);
+        EdgeID id = this->edges[i]->get_id();
+        new_graph.initialize_edge(from, to, cost, id);
     }
 
     return new_graph;
@@ -596,6 +599,44 @@ void print_everything(Graph& graph){
 
 Graph create_random_graph(int nr_vertices, int nr_edges){
     Graph graph = Graph(nr_vertices, nr_edges);
+    EdgeID id = 0;
+    for (int i = 0; i < nr_vertices; i++){
+        if (id >= nr_edges){
+            break;
+        }
+        for (int j = 0; j < nr_vertices; j++){
+            if (id >= nr_edges){
+                break;
+            }
+            if (std::rand() % 2){
+                int cost = std::rand() % 100;
+                graph.initialize_edge(i, j, cost, id);
+                //std::cerr << "Edge nr " << id << std::endl;
+                id++;
+            }
+        }
+        //std::cerr << "still looping" << std::endl;
+    }
+
+    int remaining_edges = nr_edges - id;
+
+
+    for (int i = 0; i < remaining_edges; i++){
+        int from = std::rand() % nr_vertices;
+        int to = std::rand() % nr_vertices;
+        int cost = std::rand() % 100;
+        while (graph.is_edge(from, to) != NULL_ID){
+            from = std::rand() % nr_vertices;
+            to = std::rand() % nr_vertices;
+        }
+        graph.initialize_edge(from, to, cost, id);
+        //std::cerr << "Edge nr " << id << std::endl;
+        id++;
+    }
+    return graph;
+}
+Graph create_random_graph_old(int nr_vertices, int nr_edges){
+    Graph graph = Graph(nr_vertices, nr_edges);
     for (int i = 0; i < nr_edges; i++){
         int from = std::rand() % nr_vertices;
         int to = std::rand() % nr_vertices;
@@ -605,6 +646,7 @@ Graph create_random_graph(int nr_vertices, int nr_edges){
             to = std::rand() % nr_vertices;
         }
         graph.initialize_edge(from, to, cost, i);
+        //std::cerr << "Edge nr " << i << std::endl;
     }
     return graph;
 }

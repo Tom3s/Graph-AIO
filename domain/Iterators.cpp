@@ -122,6 +122,7 @@ bool EdgeIterator::valid(){
 
 InboundEdgeIterator::InboundEdgeIterator(Graph& graph, VertexID vertex_id){
     Vertex* vertex = graph.find_vertex_by_id(vertex_id);
+    if (vertex == nullptr) throw std::domain_error("Vertex not found when creating InboundEdgeIterator");
     this->list = vertex->get_inbound_edges();
     this->current = 0;
 }
@@ -174,6 +175,7 @@ bool InboundEdgeIterator::valid(){
 
 OutboundEdgeIterator::OutboundEdgeIterator(Graph& graph, VertexID vertex_id){
     Vertex* vertex = graph.find_vertex_by_id(vertex_id);
+    if (vertex == nullptr) throw std::domain_error("Vertex not found when creating OutboundEdgeIterator");
     this->list = vertex->get_outbound_edges();
     this->current = 0;
 }

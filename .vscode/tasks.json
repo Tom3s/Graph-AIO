@@ -10,7 +10,6 @@
                 "${fileDirname}\\domain\\Elements.cpp",
                 "${fileDirname}\\domain\\Graph.cpp",
                 "${fileDirname}\\domain\\Iterators.cpp",
-                "${fileDirname}\\domain\\TrueBool.cpp",
                 "${fileDirname}\\ui\\UI.cpp",
                 "${file}",
                 "-o",
