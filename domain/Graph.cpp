@@ -1,5 +1,6 @@
 #include "Graph.hpp"
 #include "Iterators.hpp"
+#include "TrueBool.hpp"
 
 #include <string>
 #include <fstream>
@@ -7,6 +8,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <map>
+#include <queue>
 
 Graph::Graph(){    
     this->vertices = std::vector<Vertex*>();
@@ -284,6 +287,26 @@ Edge* Graph::delete_edge_by_id(EdgeID edge_id){
     return return_pointer;
 }
 
+std::map<Vertex*, Edge*> Graph::BFS(Vertex* start){
+    std::map<Vertex*, Edge*> parents;
+    std::queue<Vertex*> queue;
+    queue.push(start);
+    parents[start] = nullptr;
+    Vertex* current_vertex = start;
+    while(!queue.empty()){
+        current_vertex = queue.front();
+        queue.pop();
+        for (int i = 0; i < current_vertex->outbound_edges.size(); i++){
+            Vertex* current_target = current_vertex->outbound_edges[i]->to;
+            if (parents.find(current_target) == parents.end()){
+                queue.push(current_target);
+                parents[current_target] = current_vertex->outbound_edges[i];
+            }
+        }
+    }
+    return parents;
+}
+
 void Graph::initialize_edge(VertexID from, VertexID to, int cost, EdgeID edge_id){
     Vertex* v_from = this->vertices[from];
     Vertex* v_to = this->vertices[to];
@@ -453,6 +476,77 @@ Graph Graph::copy(){
     }
 
     return new_graph;
+}
+
+void Graph::print_bfs_path(VertexID from, VertexID to){
+    Vertex* start = find_vertex_by_id(from);
+    Vertex* end = find_vertex_by_id(to);
+    if (start == nullptr || end == nullptr){
+        return;
+    }
+
+    std::map<Vertex*, Edge*> parents = this->BFS(start);
+
+    std::vector<VertexID> path;
+
+    Vertex* current = end;
+    Edge* curr_edge;
+    while (true){
+        path.push_back(current->get_id());
+        curr_edge = parents[current];
+        if (curr_edge == nullptr) break;
+        current = parents[current]->from;
+    }
+    std::reverse(path.begin(), path.end());
+
+    for (int i = 0; i < path.size(); i++){
+        std::cout << path[i] << " <- " << std::flush;
+    }
+}
+
+std::vector<Graph> Graph::connected_components(){
+    VertexID largest_id = this->vertices[this->vertices.size() - 1]->get_id();
+    TrueBoolArray used_vertices = TrueBoolArray(largest_id + 1, false);
+    for (int i = 0; i < this->vertices.size(); i++){
+        used_vertices.set(this->vertices[i]->get_id(), true);
+    }
+    std::vector<Graph> connected_graph_list;
+
+    for (int i = 0; i < used_vertices.get_size(); i++){
+        if (!used_vertices.get(i)) continue;
+
+        Vertex* current_vertex = this->find_vertex_by_id(i);
+
+        std::map<Vertex*, Edge*> parents = this->BFS(current_vertex);
+
+        TrueBoolArray connected_vertices = TrueBoolArray(largest_id + 1, false);
+
+        Graph partial_graph(parents.size());
+        //iterate through vertices
+        int index = 0;
+        for (const auto &pair : parents){
+        //log if they've been used
+            used_vertices.set(pair.first->vertex_id, false);
+            connected_vertices.set(pair.first->vertex_id, true);
+        //create graph with these vertices
+            partial_graph.vertices[index] = new Vertex(pair.first->vertex_id);
+            index++;
+        }
+
+        std::sort(partial_graph.vertices.begin(), partial_graph.vertices.end(), [](Vertex* a, Vertex* b){ return a->get_id() < b->get_id(); });
+
+        //add edges that contain only these vertices
+        for (int j = 0; j < this->edges.size(); j++){
+            Edge* edge_candidate = this->edges[j];
+            if (connected_vertices.get(edge_candidate->get_from()) && connected_vertices.get(edge_candidate->get_to())){
+                partial_graph.add_edge(edge_candidate->get_from(), edge_candidate->get_to(), edge_candidate->get_cost());
+            }
+        }
+        //repeat until no vertex is left
+        connected_graph_list.push_back(partial_graph);
+    }
+
+    return connected_graph_list;
 }
 
 Graph::~Graph(){

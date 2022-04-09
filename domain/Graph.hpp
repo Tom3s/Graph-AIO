@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Elements.hpp"
+//#include "../../../DSA/TrueBoolArray/TrueBool.h"
+#include <map>
 
 #include <vector>
 #include <fstream>
@@ -36,6 +38,7 @@ class Graph{
         Edge* find_edge_by_id(EdgeID edge_id);
         Vertex* delete_vertex_by_id(VertexID vertex_id);
         Edge* delete_edge_by_id(EdgeID edge_id);
+        std::map<Vertex*, Edge*> BFS(Vertex* start);
     
     public:
     
@@ -86,6 +89,10 @@ class Graph{
     //copy graph
     Graph copy();
 
+    //breadth-first search
+    void print_bfs_path(VertexID from, VertexID to);
+
+    std::vector<Graph> connected_components();
 
     void clear();
 
