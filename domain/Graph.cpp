@@ -1,6 +1,6 @@
-#include "Graph.hpp"
-#include "Iterators.hpp"
-#include "TrueBool.hpp"
+#include "Graph.h"
+#include "Iterators.h"
+#include "TrueBool.h"
 
 #include <string>
 #include <fstream>
@@ -335,6 +335,8 @@ void Graph::initialize_edge(VertexID from, VertexID to, int cost, EdgeID edge_id
 // }
 
 EdgeID Graph::add_edge(VertexID from, VertexID to, int cost){
+    if (this->is_edge(from, to) != NULL_ID) return NULL_ID;
+    
     Vertex* v_from = this->find_vertex_by_id(from);
     Vertex* v_to = this->find_vertex_by_id(to);
 
@@ -504,36 +506,53 @@ void Graph::print_bfs_path(VertexID from, VertexID to){
     }
 }
 
+
+
 std::vector<Graph> Graph::connected_components(){
+    //create undurected graph
+    Graph undirected = this->copy();
+    for (int i = 0; i < this->get_number_of_edges(); i++){
+        undirected.add_edge(this->edges[i]->get_to(), this->edges[i]->get_from(), this->edges[i]->get_cost());
+    }
+    // the largiest VertexID is the last from the list
     VertexID largest_id = this->vertices[this->vertices.size() - 1]->get_id();
+    // create bool array to keep track of visited vertices
+    // false -> already used, true-> not yet visited
     TrueBoolArray used_vertices = TrueBoolArray(largest_id + 1, false);
+    
+    // only set true (visitable) the vertices that exist in the graph
     for (int i = 0; i < this->vertices.size(); i++){
         used_vertices.set(this->vertices[i]->get_id(), true);
     }
     std::vector<Graph> connected_graph_list;
 
+    //loop trough all vertices
     for (int i = 0; i < used_vertices.get_size(); i++){
-        if (!used_vertices.get(i)) continue;
+        if (!used_vertices.get(i)) continue; // skip to next if already visited
 
+        // perform BFS on current vertex
         Vertex* current_vertex = this->find_vertex_by_id(i);
+        std::map<Vertex*, Edge*> parents = undirected.BFS(current_vertex);
 
-        std::map<Vertex*, Edge*> parents = this->BFS(current_vertex);
-
+        // create bool array, that keeps track of which vertices are part of the current component
         TrueBoolArray connected_vertices = TrueBoolArray(largest_id + 1, false);
 
         Graph partial_graph(parents.size());
         //iterate through vertices
         int index = 0;
         for (const auto &pair : parents){
-        //log if they've been used
+            //log if they've been used
             used_vertices.set(pair.first->vertex_id, false);
             connected_vertices.set(pair.first->vertex_id, true);
-        //create graph with these vertices
+            //create graph with these vertices
             partial_graph.vertices[index] = new Vertex(pair.first->vertex_id);
             index++;
         }
 
-        std::sort(partial_graph.vertices.begin(), partial_graph.vertices.end(), [](Vertex* a, Vertex* b){ return a->get_id() < b->get_id(); });
+        //sort vertices by ID
+        std::sort(partial_graph.vertices.begin(), partial_graph.vertices.end(), [](Vertex* a, Vertex* b){ 
+            return a->get_id() < b->get_id(); 
+        });
 
         //add edges that contain only these vertices
         for (int j = 0; j < this->edges.size(); j++){
@@ -547,6 +566,42 @@ std::vector<Graph> Graph::connected_components(){
     }
 
     return connected_graph_list;
+}
+
+bool Graph::verify_vertex(VertexID id){
+    return this->find_vertex_by_id(id) != nullptr;
+}
+
+Matrix Graph::get_matrix(){
+    int n = this->vertices.size();
+
+    Matrix m(n, std::vector<int>(n, inf));
+    for (int i = 0; i < n; i++){
+        m[i][i] = 0;
+    }
+
+    std::vector<VertexID> lookup(n, 0);
+    for (int i = 0; i < n; i++){
+        lookup[i] = this->vertices[i]->vertex_id;
+    }
+
+    auto reverse_lookup = [list = this->vertices](VertexID id){
+        int pos = std::min((unsigned long long)id, list.size() - 1);
+        while (list[pos]->get_id() != id){
+            pos--;
+        }
+        return pos;
+    };
+
+    for (Vertex* v : this->vertices){
+        OutboundEdgeIterator iter = this->outbound_edge_iterator(v->vertex_id);
+        while (iter.valid()){
+            m[v->vertex_id][reverse_lookup(iter.get_current_target_vertex_id())] = iter.get_current_edge_cost();
+            iter.next();
+        }
+    }
+
+    return m;
 }
 
 Graph::~Graph(){
@@ -602,6 +657,7 @@ Graph read_graph_from_file(std::string input_file){
 Graph read_graph_from_file_inconsistent(std::string input_file){
     std::ifstream input_stream(input_file);
     int nr_vertices, nr_edges;
+    input_stream >> nr_vertices >> nr_edges;
 
     Graph graph(nr_vertices);
     int vertex;

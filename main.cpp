@@ -1,18 +1,37 @@
-#include "./domain/Graph.hpp"
-#include "./ui/UI.hpp"
+#include "./domain/Graph.h"
+#include "./ui/UI.h"
+#include "./function/APSP.h"
+
+// PW 3
+// Write a program that, given a graph with costs and two vertices, finds a lowest cost walk between the given vertices,
+// or prints a message if there are negative cost cycles accessible from the starting vertex. 
+// The program will use a matrix defined as d[x,k]=the cost of the lowest cost walk from s to x 
+// and of length at most k, where s is the starting vertex.
+
+// PW 4
+// Write a program that, given a graph with costs, does the following:
+//  - verify if the corresponding graph is a DAG and performs a topological sorting of the activities using the algorithm based on predecessor counters;
+//  - if it is a DAG, finds a highest cost path between two given vertices, in O(m+n).
 
 int main(){
-    Graph temp = read_graph_from_file("./graph_input_test/connected_test.txt");
+    Graph temp = read_graph_from_file("./graph_input/neg.txt");
+
+    std::cout << temp.get_number_of_edges() << "\n";
     //temp.print_bfs_path(10, 100);
+    // int a;
+    // Matrix m = temp.get_matrix();
+    // // print_matrix(m);
 
-    std::vector<Graph> connected = temp.connected_components();
+    // Matrix distances;
+    // try {
+    //     distances = APSP_starting_from(m, 1);
+    //     std::cout << "\n";
+    //     print_matrix(distances);
+    // } catch (const std::exception& ex) {
+    //     std::cout << ex.what() << "\n";
+    // }
 
-    for (int i = 0; i < connected.size(); i++){
-        std::string ofile = "connected";
-        ofile += ('0' + i);
-        ofile += ".txt";
-        write_graph_to_file_inconsistent(connected[i], ofile);
-    }
+    
 
     UI ui = UI(temp);
 

@@ -1,4 +1,4 @@
-#include "../domain/Graph.hpp"
+#include "../domain/Graph.h"
 
 class UI{
     private:
@@ -17,7 +17,7 @@ class UI{
 
     void get_properties_of_graph();
 
-    void display_vertices();
+    void display_vertex();
     void add_vertex();
     void remove_vertex();
     void get_in_degree();
@@ -36,11 +36,16 @@ class UI{
 
     bool edge_menu();
 
+    void get_shortest_path_cost();
+
+    void get_connected_components();
+
     void save_to_file();
+    void load_from_file_initial();
+    void load_from_file_saved();
     void random_graph();
 
     bool main_menu();
-
-
-
 };
+
+int convert_to_int(std::string string);

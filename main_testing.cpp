@@ -1,5 +1,6 @@
-#include "domain/Graph.hpp"
-#include "domain/Iterators.hpp"
+#include "domain/Graph.h"
+#include "domain/Iterators.h"
+#include "function/APSP.h"
 #include <string>
 #include <iostream>
 #include <chrono>
@@ -86,12 +87,31 @@ void graph1m_test(){
 
 int main(){
     //run all stuff xdd
-    std::cout << "Running! \n";
-    graph1k_test();
-    graph100k_test();
-    graph1m_test();
-    graph_random_test();
-    random_input_test();
+    // std::cout << "Running! \n";
+    // graph1k_test();
+    // graph100k_test();
+    // graph1m_test();
+    // graph_random_test();
+    // random_input_test();
+
+    Matrix a = {{0,     3,   8, inf,  -4},
+                {inf,   0, inf,   1,   7},
+                {inf,   4,   0, inf, inf},
+                {2,   inf,  -5,   0, inf},
+                {inf, inf, inf,   6,   0}};
+    Matrix identity(5, std::vector<int>(5, 0));
+    for (int i = 0; i < 5; i++){
+        identity[i][i] = 1;
+    }
+    //print_matrix(a);
+    // Matrix squared = matrix_multiply(a, a);
+    // print_matrix(squared);
+    Matrix final = APSP_starting_from(a, 0);
+    print_matrix(final);
+
+    // print_matrix(a);
+    // Matrix normal = matrix_multiply(a, identity);
+    // print_matrix(normal);
 
     return 0;
 }

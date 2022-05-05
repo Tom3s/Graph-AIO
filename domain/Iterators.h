@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Elements.hpp"
-#include "Graph.hpp"
+#include "Elements.h"
+#include "Graph.h"
 
 class VertexIterator{
 

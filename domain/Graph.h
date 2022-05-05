@@ -1,12 +1,16 @@
 #pragma once
 
-#include "Elements.hpp"
+#include "Elements.h"
 //#include "../../../DSA/TrueBoolArray/TrueBool.h"
 #include <map>
 
 #include <vector>
 #include <fstream>
 #include <string>
+
+#define inf 2147483646/2
+
+typedef std::vector<std::vector<int>> Matrix;
 
 class EdgeIterator;
 class VertexIterator;
@@ -85,6 +89,10 @@ class Graph{
     InboundEdgeIterator inbound_edge_iterator(VertexID vertex_id);
     //outbound iterator
     OutboundEdgeIterator outbound_edge_iterator(VertexID vertex_id);
+
+    bool verify_vertex(VertexID id);
+
+    Matrix get_matrix();
 
     //copy graph
     Graph copy();

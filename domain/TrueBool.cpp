@@ -1,4 +1,4 @@
-#include "TrueBool.hpp"
+#include "TrueBool.h"
 #include <stdlib.h>
 #include <stdexcept>
 

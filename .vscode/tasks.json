@@ -11,6 +11,7 @@
                 "${fileDirname}\\domain\\Graph.cpp",
                 "${fileDirname}\\domain\\Iterators.cpp",
                 "${fileDirname}\\domain\\TrueBool.cpp",
+                "${fileDirname}\\function\\APSP.cpp",
                 "${fileDirname}\\ui\\UI.cpp",
                 "${file}",
                 "-o",

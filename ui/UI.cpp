@@ -1,20 +1,38 @@
-#include "UI.hpp"
-#include "../domain/Graph.hpp"
-#include "../domain/Elements.hpp"
-#include "../domain/Iterators.hpp"
+#include "UI.h"
+#include "../domain/Graph.h"
+#include "../domain/Elements.h"
+#include "../domain/Iterators.h"
+#include "../function/APSP.h"
 
 #include <iostream>
 
-UI::UI(Graph& graph){
-    this->graph = graph;
+int convert_to_int(std::string string){
+    int len = string.size();
+    if (len > 9 || len == 0) return -1;
+    int quantity = 0;
+    int power = 1;
+    for (int i = len - 1; i >= 0; i--){
+        if (string[i] > '9' || string[i] < '0') return -1;
+        quantity += power * (string[i] - '0');
+        power *= 10;
+    }
+    return quantity;
+}
+
+UI::UI(Graph& _graph) : graph{ _graph }{
+    //this->graph = graph;
     this->main_menu_options.push_back("Display properties of the graph");
     this->main_menu_options.push_back("Vertex menu");
     this->main_menu_options.push_back("Edge menu");
+    this->main_menu_options.push_back("Get conncted components (written to files)");
+    this->main_menu_options.push_back("Get shortest path cost");
     this->main_menu_options.push_back("Save to file");
+    this->main_menu_options.push_back("Load graph from file (initial format)");
+    this->main_menu_options.push_back("Load graph from file (format saved by the app)");
     this->main_menu_options.push_back("Generate random graph");
     this->main_menu_options.push_back("Exit");
 
-    this->vertex_menu_options.push_back("Display all vertices");
+    this->vertex_menu_options.push_back("Display one vertex");
     this->vertex_menu_options.push_back("Add new vertex");
     this->vertex_menu_options.push_back("Remove vertex");
     this->vertex_menu_options.push_back("Get inbound degree of a vertex");
@@ -22,7 +40,7 @@ UI::UI(Graph& graph){
     this->vertex_menu_options.push_back("Vertex iterator");
     this->vertex_menu_options.push_back("Back");
 
-    this->edge_menu_options.push_back("Display all edges");
+    this->edge_menu_options.push_back("Display one edge");
     this->edge_menu_options.push_back("Add new edge");
     this->edge_menu_options.push_back("Remove edge");
     this->edge_menu_options.push_back("Edit edge cost");
@@ -55,12 +73,18 @@ void UI::get_properties_of_graph(){
     std::cout << "Number of edges: " << this->graph.get_number_of_edges() << std::endl;
 }
 
-void UI::display_vertices(){
-    VertexIterator vert_iter = this->graph.vertex_iterator();
-    vert_iter.first();
+void UI::display_vertex(){
+    VertexID this_vert;
+    std::cout << "Enter vertex id: ";
+    std::cin >> this_vert;
 
-    while (vert_iter.valid()){
-        VertexID this_vert = vert_iter.get_current_vertex_id();
+    if (!this->graph.verify_vertex(this_vert)){
+        std::cout << "There is no vertex with id " << this_vert << "\n";
+        return;
+    }
+
+
+    {
         std::cout << this_vert << ": " << std::endl;
         InboundEdgeIterator in_iter = this->graph.inbound_edge_iterator(this_vert);
         in_iter.first();
@@ -79,7 +103,6 @@ void UI::display_vertices(){
             out_iter.next();
         }
         std::cout << std::endl;
-        vert_iter.next();
     }
 }
 
@@ -88,10 +111,15 @@ void UI::add_vertex(){
 }
 
 void UI::remove_vertex(){
-    int input;
+    std::string str;
     std::cout << "ID of vertex to remove:" << std::endl;
     std::cout << ">>> " << std::flush;
-    std::cin >> input;
+    std::cin >> str;
+    int input = convert_to_int(str);
+    if (input == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
 
     if (this->graph.remove_vertex(input)){
         std::cout << "Vertex " << input << " removed successfully!" << std::endl;
@@ -101,10 +129,15 @@ void UI::remove_vertex(){
 }
 
 void UI::get_in_degree(){
-    int input;
+    std::string str;
     std::cout << "ID of vertex:" << std::endl;
     std::cout << ">>> " << std::flush;
-    std::cin >> input;
+    std::cin >> str;
+    int input = convert_to_int(str);
+    if (input == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
 
     int indegree = this->graph.inbound_degree(input);
     if (indegree == -1) {
@@ -116,10 +149,15 @@ void UI::get_in_degree(){
 }
 
 void UI::get_out_degree(){
-    int input;
+    std::string str;
     std::cout << "ID of vertex:" << std::endl;
     std::cout << ">>> " << std::flush;
-    std::cin >> input;
+    std::cin >> str;
+    int input = convert_to_int(str);
+    if (input == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
 
     int outdegree = this->graph.inbound_degree(input);
     if (outdegree == -1) {
@@ -145,8 +183,10 @@ void UI::iterate_vertices(){
         std::cout << "4. Next vertex" << std::endl;
         std::cout << "5. Back" << std::endl;
         std::cout << ">>> " << std::flush;
-        int input;
-        std::cin >> input;
+        std::string str;
+        std::cin >> str;
+        int input = convert_to_int(str);
+
         if (input == 1){
             VertexID next;
             iter.next();
@@ -183,13 +223,14 @@ void UI::iterate_vertices(){
 
 bool UI::vertex_menu(){
     this->print_vertex_menu();
-    int input;
+    std::string str;
     std::cout << ">>> " << std::flush;
-    std::cin >> input;
+    std::cin >> str;
+    int input = convert_to_int(str);
 
     switch(input){
         case 1:
-            this->display_vertices();
+            this->display_vertex();
             break;
         case 2:
             this->add_vertex();
@@ -225,16 +266,32 @@ void UI::display_edges(){
 }
 
 void UI::add_edge(){
+    std::string str;
     int from, to, cost;
     std::cout << "ID of base vertex:" << std::endl;
     std::cout << ">>> " << std::flush;
-    std::cin >> from;
+    std::cin >> str;
+    from = convert_to_int(str);
+    if (from == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
     std::cout << "ID of target vertex:" << std::endl;
     std::cout << ">>> " << std::flush;
-    std::cin >> to;
+    std::cin >> str;
+    to = convert_to_int(str);
+    if (to == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
     std::cout << "Cost of edge:" << std::endl;
     std::cout << ">>> " << std::flush;
-    std::cin >> cost;
+    std::cin >> str;
+    cost = convert_to_int(str);
+    if (cost == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
 
     EdgeID id = this->graph.add_edge(from, to, cost);
 
@@ -246,10 +303,15 @@ void UI::add_edge(){
 }
 
 void UI::remove_edge(){
-    int input;
+    std::string str;
     std::cout << "ID of edge to remove:" << std::endl;
     std::cout << ">>> " << std::flush;
-    std::cin >> input;
+    std::cin >> str;
+    int input = convert_to_int(str);
+    if (input == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
 
     if (this->graph.remove_edge(input)){
         std::cout << "Edge " << input << " removed successfully!" << std::endl;
@@ -260,12 +322,23 @@ void UI::remove_edge(){
 
 void UI::edit_edge_cost(){
     int index, new_cost;
+    std::string str;
     std::cout << "ID of edge to edit:" << std::endl;
     std::cout << ">>> " << std::flush;
-    std::cin >> index;
+    std::cin >> str;
+    index = convert_to_int(str);
+    if (index == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
     std::cout << "New cost:" << std::endl;
     std::cout << ">>> " << std::flush;
-    std::cin >> new_cost;
+    std::cin >> str;
+    new_cost = convert_to_int(str);
+    if (new_cost == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
 
     if (this->graph.edit_edge_cost(index, new_cost)){
         std::cout << "Edge updated successfully!" << std::endl;
@@ -276,9 +349,15 @@ void UI::edit_edge_cost(){
 
 void UI::get_edge_properties(){
     int index;
+    std::string str;
     std::cout << "ID of edge to get properties:" << std::endl;
     std::cout << ">>> " << std::flush;
-    std::cin >> index;
+    std::cin >> str;
+    index = convert_to_int(str);
+    if (index == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
 
     int cost = this->graph.get_edge_cost(index);
 
@@ -296,10 +375,21 @@ void UI::get_edge_properties(){
 
 void UI::check_if_edge_exists(){
     int base, target;
+    std::string str;
     std::cout << "Base vertex: " << std::endl << ">>> " << std::flush;
-    std::cin >> base;
+    std::cin >> str;
+    base = convert_to_int(str);
+    if (base == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
     std::cout << "Target vertex: " << std::endl << ">>> " << std::flush;
-    std::cin >> target;
+    std::cin >> str;
+    target = convert_to_int(str);
+    if (target == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
 
     EdgeID edge_id = this->graph.is_edge(base, target);
 
@@ -326,8 +416,9 @@ void UI::iterate_edges(){
         std::cout << "2. Next edge" << std::endl;
         std::cout << "3. Back" << std::endl;
         std::cout << ">>> " << std::flush;
-        int input;
-        std::cin >> input;
+        std::string str;
+        std::cin >> str;
+        int input = convert_to_int(str);
 
         switch (input){
             case 1:
@@ -356,9 +447,10 @@ void UI::iterate_edges(){
 
 bool UI::edge_menu(){
     this->print_edge_menu();
-    int input;
+    std::string str;
     std::cout << ">>> " << std::flush;
-    std::cin >> input;
+    std::cin >> str;
+    int input = convert_to_int(str);
 
     switch(input){
         case 1:
@@ -392,6 +484,76 @@ bool UI::edge_menu(){
     return true;
 }
 
+void UI::get_shortest_path_cost(){
+    std::cout << "Get path costs from vertex: ";
+    VertexID id;
+    std::cin >> id;
+    if (!this->graph.verify_vertex(id)){
+        std::cout << "There is no vertex with id " << id << "\n";
+        return;
+    }
+
+    Matrix adjecency = this->graph.get_matrix();
+
+    
+    Matrix costs;
+    try {
+        costs = APSP_starting_from(adjecency, id);
+        print_matrix(costs);
+    } catch (const std::exception& ex) {
+        std::cout << ex.what() << "\n";
+        return;
+    }
+
+    int nr_steps;
+
+    std::cout << "Target vertex: ";
+    VertexID target;
+    std::cin >> target;
+    if (!this->graph.verify_vertex(target)){
+        std::cout << "There is no vertex with id " << target << "\n";
+        return;
+    }
+
+    std::cout << "Maximum number of steps: ";
+    std::cin >> nr_steps;
+
+    if (nr_steps < 1 || nr_steps > this->graph.get_number_of_vertices() - 1){
+        std::cout << "Length of walk must be between 1 and " << this->graph.get_number_of_vertices() - 1 << "\n";
+        return;
+    }
+
+    auto vector_min = [](std::vector<int> v){
+        int minim = inf;
+        for (int a : v){
+            minim = std::min(minim, a);
+        }
+        return minim;
+    };
+
+    std::cout << "Least cost walk from " << id << " to " << target << " in at most " << nr_steps << " steps:\n";
+    std::cout << vector_min(costs[target]) << "\n";
+}
+
+void UI::get_connected_components(){
+    std::string initial = "./connected/graph_";
+    initial += std::to_string(this->graph.get_number_of_vertices());
+    initial += "v_";
+    initial += std::to_string(this->graph.get_number_of_edges());
+    initial += "e_";
+
+    std::vector<Graph> connected = this->graph.connected_components();
+
+    for (int i = 0; i < connected.size(); i++){
+        std::string ofile = initial;
+        ofile += std::to_string(i);
+        ofile += ".txt";
+        write_graph_to_file_inconsistent(connected[i], ofile);
+    }
+
+    std::cout << "Connected components saved to files " << initial << "0-" << connected.size() - 1 << ".txt" << std::endl;
+}
+
 void UI::save_to_file(){
     std::string name;
     std::cout << "File name: \n>>> "; 
@@ -400,12 +562,40 @@ void UI::save_to_file(){
     write_graph_to_file_inconsistent(this->graph, "./graph_output/" + name);
 }
 
+void UI::load_from_file_initial(){
+    std::string name;
+    std::cout << "File name: \n>>> "; 
+    std::cin >> name;
+    name += ".txt";
+    this->graph.clear();
+    this->graph = read_graph_from_file("./graph_input/" + name);
+}
+
+void UI::load_from_file_saved(){
+    std::string name;
+    std::cout << "File name: \n>>> "; 
+    std::cin >> name;
+    name += ".txt";
+    this->graph.clear();
+    this->graph = read_graph_from_file_inconsistent("./graph_output/" + name);
+}
 void UI::random_graph(){
     int nr_vertices, nr_edges;
+    std::string str;
     std::cout << "Number of vertices:\n>>> ";
-    std::cin >> nr_vertices;
+    std::cin >> str;
+    nr_vertices = convert_to_int(str);
+    if (nr_vertices == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
     std::cout << "Number of edges:\n>>> ";
-    std::cin >> nr_edges;
+    std::cin >> str;
+    nr_edges = convert_to_int(str);
+    if (nr_edges == -1){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
 
     if (nr_vertices * nr_vertices < nr_edges){
         std::cout << "Number of edges is too high!" << std::endl;
@@ -418,9 +608,10 @@ void UI::random_graph(){
 
 bool UI::main_menu(){
     this->print_main_menu();
-    int input;
+    std::string str;
     std::cout << ">>> " << std::flush;
-    std::cin >> input;
+    std::cin >> str;
+    int input = convert_to_int(str);
 
     switch(input){
         case 1:
@@ -433,12 +624,24 @@ bool UI::main_menu(){
             while (this->edge_menu()){};
             break;
         case 4:
-            this->save_to_file();
+            this->get_connected_components();
             break;
         case 5:
-            this->random_graph();
+            this->get_shortest_path_cost();
             break;
         case 6:
+            this->save_to_file();
+            break;
+        case 7:
+            this->load_from_file_initial();
+            break;
+        case 8:
+            this->load_from_file_saved();
+            break;
+        case 9:
+            this->random_graph();
+            break;
+        case 10:
             return false;
             break;
         default:
