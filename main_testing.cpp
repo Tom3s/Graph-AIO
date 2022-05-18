@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <chrono>
+#include <cassert>
 
 using namespace std::chrono;
 
@@ -93,25 +94,34 @@ int main(){
     // graph1m_test();
     // graph_random_test();
     // random_input_test();
-
-    Matrix a = {{0,     3,   8, inf,  -4},
+    
+    /*{
+        Matrix a = {{0,     3,   8, inf,  -4},
                 {inf,   0, inf,   1,   7},
                 {inf,   4,   0, inf, inf},
                 {2,   inf,  -5,   0, inf},
                 {inf, inf, inf,   6,   0}};
-    Matrix identity(5, std::vector<int>(5, 0));
-    for (int i = 0; i < 5; i++){
-        identity[i][i] = 1;
-    }
-    //print_matrix(a);
-    // Matrix squared = matrix_multiply(a, a);
-    // print_matrix(squared);
-    Matrix final = APSP_starting_from(a, 0);
-    print_matrix(final);
+        Matrix identity(5, std::vector<int>(5, 0));
+        for (int i = 0; i < 5; i++){
+            identity[i][i] = 1;
+        }
+        Matrix final = APSP_starting_from(a, 0);
+        print_matrix(final);
+    }*/
 
-    // print_matrix(a);
-    // Matrix normal = matrix_multiply(a, identity);
-    // print_matrix(normal);
+    Graph temp = read_graph_from_file("./graph_input/dag-path.txt");
+    //assert(temp.topo_sorted_vertices().empty());
+
+    //temp.clear();
+    //temp = read_graph_from_file("./graph_input/toposort-true.txt");
+
+    //assert(!temp.topo_sorted_vertices().empty());
+
+    for (auto v : temp.longest_path(0, 5)){
+        std::cout << v << " ";
+    }
+
+    std::cout << "\nDone!\n";
 
     return 0;
 }

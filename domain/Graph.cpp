@@ -724,6 +724,74 @@ Graph read_graph_from_file(std::string input_file){
 
     return graph;
 }
+
+std::vector<VertexID> Graph::longest_path(VertexID from, VertexID to){
+    std::vector<Vertex*> toposorted = this->topo_sorted_vertices();
+
+    if (toposorted.size() == 0) {
+        return std::vector<VertexID>();
+    }
+
+    int start_index = -1;
+    int end_index = -1;
+
+    for (int i = 0; i < toposorted.size(); i++){
+        if (toposorted[i]->get_id() == to){
+            end_index = i;
+            break;
+        }
+
+        if (toposorted[i]->get_id() == from){
+            start_index = i;
+        }
+    }
+    if (start_index == -1){
+        return std::vector<VertexID>();
+    }
+
+    std::map<Vertex*, Vertex*> parent_list;
+    std::vector<int> costs = std::vector<int>(toposorted.size(), -1);
+
+    costs[start_index] = 0;
+
+    for (int i = start_index + 1; i <= end_index; i++){
+        int max_score = INT_MIN, current_score;
+        Edge* max_edge;
+        for (int j = i - 1; j >= start_index; j--){
+            //check if inside path bounds
+            //calculate score
+            EdgeID current = this->is_edge(toposorted[j]->get_id(), toposorted[i]->get_id());
+            if (current != NULL_ID){
+                current_score = costs[j] + this->get_edge_cost(current);
+                if (current_score >= max_score){
+                    max_score = current_score;
+                    max_edge = this->find_edge_by_id(current);
+                }
+            }
+            //save if better
+        }
+        costs[i] = max_score;
+        parent_list[max_edge->to] = max_edge->from;
+    }
+
+    std::cout << "DEBUG: " << costs[end_index] << "\n";
+
+    Vertex* path_builder = toposorted[end_index];
+
+    std::vector<VertexID> path;
+
+    path.push_back(path_builder->get_id());
+
+    while (path_builder != this->find_vertex_by_id(from)){
+        path.push_back(parent_list[path_builder]->get_id());
+        path_builder = parent_list[path_builder];
+    }
+
+    std::reverse(path.begin(), path.end());
+
+    return path;
+}
+
 Graph read_graph_from_file_inconsistent(std::string input_file){
     std::ifstream input_stream(input_file);
     int nr_vertices, nr_edges;

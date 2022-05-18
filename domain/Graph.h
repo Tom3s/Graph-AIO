@@ -44,6 +44,7 @@ class Graph{
         Edge* delete_edge_by_id(EdgeID edge_id);
         std::map<Vertex*, Edge*> BFS(Vertex* start);
         std::vector<Vertex*> topo_sorted_vertices();
+        
     
     public:
     
@@ -105,7 +106,10 @@ class Graph{
 
     std::vector<Graph> connected_components();
 
+    std::vector<VertexID> longest_path(VertexID from, VertexID to);
+
     void clear();
+
 
     ~Graph();
 
