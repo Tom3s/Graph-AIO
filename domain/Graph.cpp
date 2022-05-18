@@ -308,8 +308,8 @@ std::map<Vertex*, Edge*> Graph::BFS(Vertex* start){
 }
 
 void Graph::initialize_edge(VertexID from, VertexID to, int cost, EdgeID edge_id){
-    Vertex* v_from = this->vertices[from];
-    Vertex* v_to = this->vertices[to];
+    Vertex* v_from = this->find_vertex_by_id(from);//this->vertices[from];
+    Vertex* v_to = this->find_vertex_by_id(to);//this->vertices[to];
 
     Edge* new_edge = new Edge(v_from, v_to, cost, edge_id);
     
@@ -511,9 +511,24 @@ void Graph::print_bfs_path(VertexID from, VertexID to){
 std::vector<Graph> Graph::connected_components(){
     //create undurected graph
     Graph undirected = this->copy();
-    for (int i = 0; i < this->get_number_of_edges(); i++){
-        undirected.add_edge(this->edges[i]->get_to(), this->edges[i]->get_from(), this->edges[i]->get_cost());
+    // for (int i = 0; i < this->get_number_of_edges(); i++){
+    //     undirected.add_edge(this->edges[i]->get_to(), this->edges[i]->get_from(), this->edges[i]->get_cost());
+    // }
+
+    EdgeIterator edge_iter = this->edge_iterator();
+
+    while (edge_iter.valid()){
+        if (edge_iter.get_base_vertex() == edge_iter.get_target_vertex()){
+            undirected.remove_edge(edge_iter.get_current_edge_id());
+            edge_iter.next();
+            continue;
+        }
+        undirected.add_edge(edge_iter.get_target_vertex(), edge_iter.get_base_vertex(), edge_iter.get_current_edge_cost());
+        edge_iter.next();
     }
+
+    //std::cout << "Nr edges orig: " << this->get_number_of_edges() << " undirected edges: " << undirected.get_number_of_edges() << "\n";
+    //write_graph_to_file_inconsistent(undirected, "./graph_output/undirected.txt");
     // the largiest VertexID is the last from the list
     VertexID largest_id = this->vertices[this->vertices.size() - 1]->get_id();
     // create bool array to keep track of visited vertices
@@ -572,6 +587,14 @@ bool Graph::verify_vertex(VertexID id){
     return this->find_vertex_by_id(id) != nullptr;
 }
 
+int Graph::reverse_vertex_lookup(VertexID vertex_id){
+    int pos = std::min((unsigned long long)vertex_id, this->vertices.size() - 1);
+    while (this->vertices[pos]->get_id() != vertex_id){
+        pos--;
+    }
+    return pos;
+}
+
 Matrix Graph::get_matrix(){
     int n = this->vertices.size();
 
@@ -585,23 +608,70 @@ Matrix Graph::get_matrix(){
         lookup[i] = this->vertices[i]->vertex_id;
     }
 
-    auto reverse_lookup = [list = this->vertices](VertexID id){
-        int pos = std::min((unsigned long long)id, list.size() - 1);
-        while (list[pos]->get_id() != id){
-            pos--;
-        }
-        return pos;
-    };
-
     for (Vertex* v : this->vertices){
         OutboundEdgeIterator iter = this->outbound_edge_iterator(v->vertex_id);
         while (iter.valid()){
-            m[v->vertex_id][reverse_lookup(iter.get_current_target_vertex_id())] = iter.get_current_edge_cost();
+            m[v->vertex_id][this->reverse_vertex_lookup(iter.get_current_target_vertex_id())] = iter.get_current_edge_cost();
             iter.next();
         }
     }
 
     return m;
+}
+
+std::vector<Vertex*> Graph::topo_sorted_vertices(){
+// Input:
+//     G : directed graph
+// Output:
+//     sorted : a list of vertices in topological sorting order, or null if G has cycles
+// Algorithm:
+//     sorted = emptyList
+    std::vector<Vertex*> sorted_list;
+//     Queue q
+    std::queue<Vertex*> Q;
+//     Dictionary count
+    std::map<Vertex*, int> count;
+//     for x in X do
+    for (auto vertex : this->vertices){
+    //         count[x] = indeg(x)
+        count[vertex] = vertex->inbound_edges.size();
+    //         if count[x] == 0 then
+        if (count[vertex] == 0) {
+    //             q.enqueue(x)
+            Q.push(vertex);
+    //         endif
+        } 
+//     endfor
+    }
+//     while not q.isEmpty() do
+    Vertex* current;
+    while (!Q.empty()){
+//         x = q.dequeue()
+        current = Q.front();
+        Q.pop();
+//         sorted.append(x)
+        sorted_list.push_back(current);
+//         for y in Nout(x) do
+        for (auto out_edge : current->outbound_edges){
+//             count[y] = count[y] - 1
+            count[out_edge->to]--;
+//             if count[y] == 0 then
+            if (count[out_edge->to] == 0){
+//                 q.enqueue(y)
+                Q.push(out_edge->to);
+//             endif
+            }
+//         endfor
+        }
+//     endwhile
+    }
+//     if sorted.size() < X.size() then
+    if (sorted_list.size() < this->vertices.size()){
+//         sorted = null
+        return std::vector<Vertex*>();
+//     endif
+    }
+    return sorted_list;
 }
 
 Graph::~Graph(){

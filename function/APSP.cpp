@@ -30,7 +30,7 @@ Matrix matrix_multiply(Matrix& a, Matrix& b){
     return c;
 }
 
-Matrix matrix_extend(Matrix& d, Matrix& w){
+void matrix_extend(Matrix& d, Matrix& w){
     int n = d.size();
 
     for (int i = 0; i < n; i++){
@@ -46,7 +46,7 @@ Matrix matrix_extend(Matrix& d, Matrix& w){
         }
     }
 
-    return d;
+    //return d;
 }
 
 Matrix APSP(Matrix& matrix){
@@ -57,7 +57,7 @@ Matrix APSP(Matrix& matrix){
     for (int i = 1; i < n -1; i++){
         print_matrix(d);
         std::cout << "\n";
-        d = matrix_extend(d, matrix);
+        matrix_extend(d, matrix);
     }
 
     return d;
@@ -77,8 +77,11 @@ Matrix APSP_starting_from(Matrix& matrix, VertexID id){
     for (int i = 1; i < n -1; i++){
         //print_matrix(d);
         //std::cout << "\n";
-        d = matrix_extend(d, matrix);
+        matrix_extend(d, matrix);
         //c[i] = d[id];
+
+        std::cout << i << "/" << n - 1 << "\n";
+
         for (int j = 0; j < n; j++){
             c[j][i] = d[id][j];
         }

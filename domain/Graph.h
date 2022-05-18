@@ -43,6 +43,7 @@ class Graph{
         Vertex* delete_vertex_by_id(VertexID vertex_id);
         Edge* delete_edge_by_id(EdgeID edge_id);
         std::map<Vertex*, Edge*> BFS(Vertex* start);
+        std::vector<Vertex*> topo_sorted_vertices();
     
     public:
     
@@ -83,6 +84,8 @@ class Graph{
     bool remove_vertex(VertexID vertex_id);
     //vertex iterator
     VertexIterator vertex_iterator();
+
+    int reverse_vertex_lookup(VertexID vertex_id);
 
     EdgeIterator edge_iterator();
     //inbound iterator

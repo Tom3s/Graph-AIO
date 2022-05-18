@@ -499,7 +499,7 @@ void UI::get_shortest_path_cost(){
     Matrix costs;
     try {
         costs = APSP_starting_from(adjecency, id);
-        print_matrix(costs);
+        //print_matrix(costs);
     } catch (const std::exception& ex) {
         std::cout << ex.what() << "\n";
         return;
@@ -523,16 +523,23 @@ void UI::get_shortest_path_cost(){
         return;
     }
 
-    auto vector_min = [](std::vector<int> v){
+    auto vector_min = [](std::vector<int> v, int l){
         int minim = inf;
-        for (int a : v){
-            minim = std::min(minim, a);
+        for (int i = 0; i < l - 1; i++){
+            minim = std::min(minim, v[i]);
         }
         return minim;
     };
 
+    int cost_of_walk = vector_min(costs[this->graph.reverse_vertex_lookup(target)], nr_steps);
+
+    if (cost_of_walk == inf){
+        std::cout << "There is no walk from " << id << " to " << target << " in " << nr_steps << " steps.\n";
+        return;
+    }
+
     std::cout << "Least cost walk from " << id << " to " << target << " in at most " << nr_steps << " steps:\n";
-    std::cout << vector_min(costs[target]) << "\n";
+    std::cout << cost_of_walk << "\n";
 }
 
 void UI::get_connected_components(){
