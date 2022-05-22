@@ -8,7 +8,7 @@
 #include <fstream>
 #include <string>
 
-#define inf 2147483646/2
+#define inf 2147483644/2
 
 typedef std::vector<std::vector<int>> Matrix;
 

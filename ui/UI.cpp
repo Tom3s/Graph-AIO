@@ -26,6 +26,7 @@ UI::UI(Graph& _graph) : graph{ _graph }{
     this->main_menu_options.push_back("Edge menu");
     this->main_menu_options.push_back("Get conncted components (written to files)");
     this->main_menu_options.push_back("Get shortest path cost");
+    this->main_menu_options.push_back("Get longest path walk");
     this->main_menu_options.push_back("Save to file");
     this->main_menu_options.push_back("Load graph from file (initial format)");
     this->main_menu_options.push_back("Load graph from file (format saved by the app)");
@@ -613,6 +614,38 @@ void UI::random_graph(){
     this->graph = create_random_graph_old(nr_vertices, nr_edges);
 }
 
+void UI::get_longest_path_walk(){
+    int from, to;
+    std::string str;
+    std::cout << "From: " << std::endl << ">>> " << std::flush;
+    std::cin >> str;
+    from = convert_to_int(str);
+    if (from == -1 ||!this->graph.verify_vertex(from)){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
+    std::cout << "To: " << std::endl << ">>> " << std::flush;
+    std::cin >> str;
+    to = convert_to_int(str);
+    if (to == -1 || !this->graph.verify_vertex(to)){
+        std::cout << "Invalid input!" << std::endl;
+        return;
+    }
+
+    auto path = this->graph.longest_path(from, to);
+
+    if (path.size() == 0){
+        std::cout << "Path not found (there are either cycles or there's no path)\n";
+        return;
+    }
+
+    std::cout << "Longest path: \n";
+    for (auto v : path){
+        std::cout << v << " ";
+    }
+    std::cout << "\n";
+}
+
 bool UI::main_menu(){
     this->print_main_menu();
     std::string str;
@@ -637,18 +670,21 @@ bool UI::main_menu(){
             this->get_shortest_path_cost();
             break;
         case 6:
-            this->save_to_file();
+            this->get_longest_path_walk();
             break;
         case 7:
-            this->load_from_file_initial();
+            this->save_to_file();
             break;
         case 8:
-            this->load_from_file_saved();
+            this->load_from_file_initial();
             break;
         case 9:
-            this->random_graph();
+            this->load_from_file_saved();
             break;
         case 10:
+            this->random_graph();
+            break;
+        case 11:
             return false;
             break;
         default:

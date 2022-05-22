@@ -109,17 +109,16 @@ int main(){
         print_matrix(final);
     }*/
 
-    Graph temp = read_graph_from_file("./graph_input/dag-path.txt");
+    Graph temp = read_graph_from_file("./graph_input/matrix_manual1.txt");
+    Matrix a = temp.get_matrix();
+    Matrix final = APSP_starting_from(a, 0);
+    print_matrix(final);
     //assert(temp.topo_sorted_vertices().empty());
 
     //temp.clear();
     //temp = read_graph_from_file("./graph_input/toposort-true.txt");
 
     //assert(!temp.topo_sorted_vertices().empty());
-
-    for (auto v : temp.longest_path(0, 5)){
-        std::cout << v << " ";
-    }
 
     std::cout << "\nDone!\n";
 

@@ -38,6 +38,8 @@ class UI{
 
     void get_shortest_path_cost();
 
+    void get_longest_path_walk();
+
     void get_connected_components();
 
     void save_to_file();

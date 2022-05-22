@@ -75,10 +75,10 @@ Matrix APSP_starting_from(Matrix& matrix, VertexID id){
     }
 
     for (int i = 1; i < n -1; i++){
-        //print_matrix(d);
-        //std::cout << "\n";
         matrix_extend(d, matrix);
-        //c[i] = d[id];
+        // //c[i] = d[id];
+        // print_matrix(d);
+        // std::cout << "\n";
 
         std::cout << i << "/" << n - 1 << "\n";
 
