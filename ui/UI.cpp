@@ -27,6 +27,7 @@ UI::UI(Graph& _graph) : graph{ _graph }{
     this->main_menu_options.push_back("Get conncted components (written to files)");
     this->main_menu_options.push_back("Get shortest path cost");
     this->main_menu_options.push_back("Get longest path walk");
+    this->main_menu_options.push_back("Get shortest cycle");
     this->main_menu_options.push_back("Save to file");
     this->main_menu_options.push_back("Load graph from file (initial format)");
     this->main_menu_options.push_back("Load graph from file (format saved by the app)");
@@ -646,6 +647,22 @@ void UI::get_longest_path_walk(){
     std::cout << "\n";
 }
 
+void UI::get_tsp(){
+    int cost;
+    std::vector<VertexID> path = this->graph.TSP(cost);
+
+    std::cout << "Minimum cost cycle:\n";
+    std::cout << "Cost: " << cost << "\n";
+
+    for (int i = 0; i < path.size(); i++){
+        std::cout << path[i] << " ";
+        if (i != path.size() - 1){
+            std::cout << "-> ";
+        }
+    }
+    std::cout << "\n";
+}
+
 bool UI::main_menu(){
     this->print_main_menu();
     std::string str;
@@ -673,18 +690,21 @@ bool UI::main_menu(){
             this->get_longest_path_walk();
             break;
         case 7:
-            this->save_to_file();
+            this->get_tsp();
             break;
         case 8:
-            this->load_from_file_initial();
+            this->save_to_file();
             break;
         case 9:
-            this->load_from_file_saved();
+            this->load_from_file_initial();
             break;
         case 10:
-            this->random_graph();
+            this->load_from_file_saved();
             break;
         case 11:
+            this->random_graph();
+            break;
+        case 12:
             return false;
             break;
         default:

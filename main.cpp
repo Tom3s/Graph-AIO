@@ -14,9 +14,9 @@
 //  - if it is a DAG, finds a highest cost path between two given vertices, in O(m+n).
 
 int main(){
-    Graph temp = read_graph_from_file("./graph_input/6_9.txt");
+    Graph temp = read_graph_from_file("./graph_input/graph1k.txt");
 
-    std::cout << temp.get_number_of_edges() << "\n";
+    //std::cout << temp.get_number_of_edges() << "\n";
     //temp.print_bfs_path(10, 100);
     // int a;
     // Matrix m = temp.get_matrix();

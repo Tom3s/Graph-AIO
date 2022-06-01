@@ -94,31 +94,22 @@ int main(){
     // graph1m_test();
     // graph_random_test();
     // random_input_test();
+
+    Graph temp = read_graph_from_file_inconsistent("./graph_output/20v_300e.txt");
+    //write_graph_to_file_inconsistent(temp, "./graph_output/20v_300e.txt");
     
-    /*{
-        Matrix a = {{0,     3,   8, inf,  -4},
-                {inf,   0, inf,   1,   7},
-                {inf,   4,   0, inf, inf},
-                {2,   inf,  -5,   0, inf},
-                {inf, inf, inf,   6,   0}};
-        Matrix identity(5, std::vector<int>(5, 0));
-        for (int i = 0; i < 5; i++){
-            identity[i][i] = 1;
+    int cost;
+    std::vector<VertexID> path = temp.TSP(cost);
+
+    std::cout << "Cost: " << cost << "\n";
+
+    for (int i = 0; i < path.size(); i++){
+        std::cout << path[i] << " ";
+        if (i != path.size() - 1){
+            std::cout << "-> ";
         }
-        Matrix final = APSP_starting_from(a, 0);
-        print_matrix(final);
-    }*/
-
-    Graph temp = read_graph_from_file("./graph_input/matrix_manual1.txt");
-    Matrix a = temp.get_matrix();
-    Matrix final = APSP_starting_from(a, 0);
-    print_matrix(final);
-    //assert(temp.topo_sorted_vertices().empty());
-
-    //temp.clear();
-    //temp = read_graph_from_file("./graph_input/toposort-true.txt");
-
-    //assert(!temp.topo_sorted_vertices().empty());
+    }
+    std::cout << "\n\n";
 
     std::cout << "\nDone!\n";
 

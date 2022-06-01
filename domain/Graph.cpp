@@ -792,6 +792,81 @@ std::vector<VertexID> Graph::longest_path(VertexID from, VertexID to){
     return path;
 }
 
+std::vector<VertexID> Graph::tsp_solver(int& cost, VertexID start_index){
+    std::map<Vertex*, bool> used;
+
+    int nr_used = 1;
+
+    for (auto vert : this->vertices){
+        used[vert] = false;
+    }
+
+    std::vector<VertexID> path;
+
+
+    cost = 0;
+
+    auto current_vertex = this->find_vertex_by_id(start_index);
+
+    path.push_back(current_vertex->get_id());
+
+    do {
+        int min_cost = INT_MAX;
+        Vertex* min_vert = nullptr;
+
+        auto outbound = current_vertex->get_outbound_edges();
+
+        for (auto edge : outbound){
+            if (edge->get_cost() < min_cost && !used[edge->to]){
+                if (edge->get_to() == path.front() && nr_used < this->get_number_of_vertices()) continue;
+                min_cost = edge->get_cost();
+                min_vert = edge->to;
+            }
+        }
+
+        if (min_vert == nullptr){
+            throw std::runtime_error("infinite loop");
+        }
+
+        used[min_vert] = true;
+        path.push_back(min_vert->get_id());
+        cost += min_cost;
+        nr_used ++;
+        
+        current_vertex = min_vert;
+
+    } while (current_vertex->get_id() != path.front());
+
+    return path;
+}
+
+std::vector<VertexID> Graph::TSP(int& _cost){
+    _cost = INT_MAX;
+    std::vector<VertexID> best;
+
+    auto iter = this->vertex_iterator();
+
+    while (iter.valid()){
+        int cost;
+        std::vector<VertexID> path;
+        try {
+            path = this->tsp_solver(cost, iter.get_current_vertex_id());
+        } catch (std::exception& ex){
+            iter.next();
+            continue;
+        }
+
+        if (cost < _cost){
+            _cost = cost;
+            best = path;
+        }
+        iter.next();
+
+    }
+    return best;
+}
+
+
 Graph read_graph_from_file_inconsistent(std::string input_file){
     std::ifstream input_stream(input_file);
     int nr_vertices, nr_edges;
